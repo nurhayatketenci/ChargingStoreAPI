@@ -39,14 +39,14 @@ public class StoreService {
         return converter.convert(storeRepository.save(store));
     }
 
-    private Store findByStationId(String stationId) {
+    protected Store findByStationId(String stationId) {
         return storeRepository.findByStationId(stationId)
                 .orElseThrow(() -> new SessionNotFoundException("There is no such session id: " + stationId));
     }
 
     public Store stopChargingSession(String stationId) {
         Store store = findByStationId(stationId);
-        if (store.getStartedAt() == null) {
+        if (store.getStatus() == StatusEnum.FINISHED) {
             logger.info("This session has not started yet");
             throw new SessionNotAvailableException("This session has not started yet");
         }

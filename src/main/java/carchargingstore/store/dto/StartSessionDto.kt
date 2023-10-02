@@ -9,4 +9,6 @@ data class StartSessionDto(
         val startedAt: LocalDateTime?,
         val status: StatusEnum? = StatusEnum.FINISHED
 
-)
+){
+    constructor() : this(null, null, null, StatusEnum.FINISHED)
+}
