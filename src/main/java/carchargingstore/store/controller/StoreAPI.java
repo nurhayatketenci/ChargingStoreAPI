@@ -1,6 +1,7 @@
 package carchargingstore.store.controller;
 
 import carchargingstore.store.dto.StartSessionDto;
+import carchargingstore.store.dto.SummaryDto;
 import carchargingstore.store.model.Store;
 import carchargingstore.store.service.StoreService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,6 +87,29 @@ public class StoreAPI {
     @GetMapping
     public ResponseEntity<List<Store>>getAllSession(){
         return new ResponseEntity<List<Store>>(this.storeService.getAllSession(),HttpStatus.OK);
+    }
+
+    @Operation(
+            method = "GET",
+            summary = "/chargingSessions/summary",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Retrieve a summary of\n" +
+                                    "submitted charging sessions\n" +
+                                    "including",
+                            content = @Content(
+                                    array = @ArraySchema(schema = @Schema(implementation = SummaryDto.class)))),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "There is no available session",
+                            content = @Content(schema = @Schema(hidden = true))
+                    )
+            }
+    )
+    @GetMapping("/chargingSessions/summary")
+    public ResponseEntity<SummaryDto> getChargingSummary(){
+        return new ResponseEntity<>(this.storeService.getChargingSessionSummaryLastMinute(),HttpStatus.OK);
     }
 
 

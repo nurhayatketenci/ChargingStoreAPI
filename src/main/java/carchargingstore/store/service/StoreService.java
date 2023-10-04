@@ -3,6 +3,7 @@ package carchargingstore.store.service;
 
 import carchargingstore.store.dto.StartSessionDto;
 import carchargingstore.store.dto.StartSessionDtoConverter;
+import carchargingstore.store.dto.SummaryDto;
 import carchargingstore.store.exception.SessionNotAvailableException;
 import carchargingstore.store.exception.SessionNotFoundException;
 import carchargingstore.store.model.StatusEnum;
@@ -56,7 +57,14 @@ public class StoreService {
         store.setStartedAt(null);
         logger.info("Session stoped successfully");
         return this.storeRepository.save(store);
+    }
+    public SummaryDto getChargingSessionSummaryLastMinute() {
+        LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
+        long totalCount = storeRepository.countByStartedAtGreaterThanEqual(oneMinuteAgo);
+        long startedCount = storeRepository.countByStartedAtGreaterThanEqualAndStatus(oneMinuteAgo, StatusEnum.IN_PROGRESS);
+        long stoppedCount = storeRepository.countByStoppedAtGreaterThanEqual(oneMinuteAgo);
 
+        return new SummaryDto(totalCount, startedCount, stoppedCount);
     }
 
     public List<Store> getAllSession() {
