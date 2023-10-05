@@ -4,10 +4,11 @@ package carchargingstore.store.service;
 import carchargingstore.store.dto.StartSessionDto;
 import carchargingstore.store.dto.StartSessionDtoConverter;
 import carchargingstore.store.dto.SummaryDto;
+import carchargingstore.store.exception.StationAlreadyExistException;
 import carchargingstore.store.exception.SessionNotAvailableException;
 import carchargingstore.store.exception.SessionNotFoundException;
 import carchargingstore.store.model.StatusEnum;
-import carchargingstore.store.model.Store;
+import carchargingstore.store.model.Session;
 import carchargingstore.store.repository.StoreRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,45 +30,72 @@ public class StoreService {
     }
 
     public StartSessionDto startChargingSession(String stationId) {
-        Store store = findByStationId(stationId);
-        if (store.getStatus() != StatusEnum.FINISHED) {
+        Session session = findByStationId(stationId);
+        if (session.getStatus() != StatusEnum.FINISHED) {
             logger.info("Session processing continues");
             throw new SessionNotAvailableException("Session processing continues");
         }
-        store.setStartedAt(LocalDateTime.now());
-        store.setStatus(StatusEnum.IN_PROGRESS);
-        logger.info("Session started successfully");
-        return converter.convert(storeRepository.save(store));
+        session.setStartedAt(LocalDateTime.now());
+        session.setStatus(StatusEnum.IN_PROGRESS);
+        logger.info("Session started successfully ");
+        return converter.convert(storeRepository.save(session));
     }
 
-    protected Store findByStationId(String stationId) {
-        return storeRepository.findByStationId(stationId)
-                .orElseThrow(() -> new SessionNotFoundException("There is no such session id: " + stationId));
-    }
 
-    public Store stopChargingSession(String stationId) {
-        Store store = findByStationId(stationId);
-        if (store.getStatus() == StatusEnum.FINISHED) {
+    public Session stopChargingSession(String stationId) {
+        Session session = findByStationId(stationId);
+        if (session.getStatus() == StatusEnum.FINISHED) {
             logger.info("This session has not started yet");
             throw new SessionNotAvailableException("This session has not started yet");
         }
-        store.setStationId(stationId);
-        store.setStatus(StatusEnum.FINISHED);
-        store.setStoppedAt(LocalDateTime.now());
-        store.setStartedAt(null);
+        session.setStationId(stationId);
+        session.setStatus(StatusEnum.FINISHED);
+        session.setStoppedAt(LocalDateTime.now());
         logger.info("Session stoped successfully");
-        return this.storeRepository.save(store);
+        return this.storeRepository.save(session);
     }
-    public SummaryDto getChargingSessionSummaryLastMinute() {
+
+
+    public SummaryDto getChargingSessionSummary() {
         LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
-        long totalCount = storeRepository.countByStartedAtGreaterThanEqual(oneMinuteAgo);
-        long startedCount = storeRepository.countByStartedAtGreaterThanEqualAndStatus(oneMinuteAgo, StatusEnum.IN_PROGRESS);
-        long stoppedCount = storeRepository.countByStoppedAtGreaterThanEqual(oneMinuteAgo);
+        List<Session> chargingSessions = storeRepository.findAll();
+
+        long totalCount = chargingSessions.size();
+
+        long startedCount = chargingSessions.stream()
+                .filter(session -> session.getStatus() == StatusEnum.IN_PROGRESS && session.getStartedAt()
+                        .isAfter(oneMinuteAgo)).count();
+
+        long stoppedCount = chargingSessions.stream()
+                .filter(session -> session.getStatus() == StatusEnum.FINISHED && session.getStoppedAt()
+                        .isAfter(oneMinuteAgo)).count();
 
         return new SummaryDto(totalCount, startedCount, stoppedCount);
     }
 
-    public List<Store> getAllSession() {
+
+    public void addNewSession(String stationId) {
+        boolean isStationIdExists = this.storeRepository.existsByStationId(stationId);
+        if (isStationIdExists) {
+            logger.info("This station id already exist stationId : " + stationId);
+            throw new StationAlreadyExistException("This station id already exist stationId : " + stationId);
+        }
+        Session newSession = new Session();
+        newSession.setStationId(stationId);
+        this.storeRepository.save(newSession);
+        logger.info("Station id added successfully");
+    }
+
+
+    protected Session findByStationId(String stationId) {
+        return storeRepository.findByStationId(stationId)
+                .orElseThrow(() -> new SessionNotFoundException("There is no such session id: " + stationId));
+    }
+
+
+    public List<Session> getAllSession() {
         return this.storeRepository.findAll();
     }
+
+
 }

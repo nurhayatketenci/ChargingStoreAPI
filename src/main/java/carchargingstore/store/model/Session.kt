@@ -5,7 +5,7 @@ import org.hibernate.annotations.GenericGenerator
 import java.time.LocalDateTime
 
 @Entity
-data class Store (
+data class Session (
         @Id
         @GeneratedValue(generator = "UUID")
         @GenericGenerator(name="UUID" , strategy = "org.hibernate.id.UUIDGenerator")
