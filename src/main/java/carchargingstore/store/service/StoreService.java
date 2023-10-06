@@ -38,7 +38,9 @@ public class StoreService {
         session.setStartedAt(LocalDateTime.now());
         session.setStatus(StatusEnum.IN_PROGRESS);
         logger.info("Session started successfully ");
-        return converter.convert(storeRepository.save(session));
+        StartSessionDto startSessionDto = converter.convert(session);
+        storeRepository.save(session);
+        return startSessionDto;
     }
 
 
@@ -52,7 +54,8 @@ public class StoreService {
         session.setStatus(StatusEnum.FINISHED);
         session.setStoppedAt(LocalDateTime.now());
         logger.info("Session stoped successfully");
-        return this.storeRepository.save(session);
+        this.storeRepository.save(session);
+        return session;
     }
 
 
