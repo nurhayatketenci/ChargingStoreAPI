@@ -77,7 +77,7 @@ public class StoreService {
     }
 
 
-    public void addNewSession(String stationId) {
+    public void addNewStationId(String stationId) {
         boolean isStationIdExists = this.storeRepository.existsByStationId(stationId);
         if (isStationIdExists) {
             logger.info("This station id already exist stationId : " + stationId);

@@ -24,31 +24,6 @@ public class StoreAPI {
     public StoreAPI(StoreService storeService) {
         this.storeService = storeService;
     }
-    @Operation(
-            method = "POST",
-            summary = "addSession",
-            description = "Add new session",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Station id added successfully",
-                            content = @Content(schema = @Schema(hidden = true))
-                    ),
-                    @ApiResponse(
-                            responseCode = "400",
-                            description = "This station id already exist"
-                    )
-            }
-    )
-    @PostMapping("/addsession/{stationId}")
-    public ResponseEntity<String> addNewSession(@PathVariable String stationId) {
-        try {
-            storeService.addNewSession(stationId);
-            return ResponseEntity.ok("Session added successfully.");
-        } catch (StationAlreadyExistException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 
     @Operation(
             method = "POST",
@@ -137,6 +112,28 @@ public class StoreAPI {
     @GetMapping("/chargingSessions/summary")
     public ResponseEntity<SummaryDto> getChargingSummary(){
         return new ResponseEntity<>(this.storeService.getChargingSessionSummary(),HttpStatus.OK);
+    }
+
+    @Operation(
+            method = "POST",
+            summary = "addStationId",
+            description = "Add new stationId",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Station id added successfully",
+                            content = @Content(schema = @Schema(hidden = true))
+                    ),
+                    @ApiResponse(
+                            responseCode = "400",
+                            description = "This station id already exist"
+                    )
+            }
+    )
+    @PostMapping("/addstationid/{stationId}")
+    public ResponseEntity<String> addStationId(@PathVariable String stationId) {
+        this.storeService.addNewStationId(stationId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
