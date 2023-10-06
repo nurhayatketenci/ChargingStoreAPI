@@ -23,7 +23,6 @@ public class StoreService {
     private final StartSessionDtoConverter converter;
     private Logger logger = LoggerFactory.getLogger(StoreService.class);
 
-
     public StoreService(StoreRepository storeRepository, StartSessionDtoConverter converter) {
         this.storeRepository = storeRepository;
         this.converter = converter;

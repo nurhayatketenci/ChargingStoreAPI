@@ -114,6 +114,7 @@ public class StoreAPI {
         return new ResponseEntity<>(this.storeService.getChargingSessionSummary(),HttpStatus.OK);
     }
 
+
     @Operation(
             method = "POST",
             summary = "addStationId",
